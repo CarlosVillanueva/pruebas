@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Stech</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700,900" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
+    <link rel="stylesheet" href="css/style.css">
+
+    <body>
+    <header class = "site-header inicio">
+    <div class="contenedor contenido-header"> 
+     <div class="barra">
+
+        <a href="#">
+          <img src="img/logo-cloud.png" alt="Logotipo gpsimple" class="logo">
+        </a>
+      </div>
+    </div>
+
+    </header>
+ <fomr name="tuFormulario2">
+  <section class="contenedor seccion">
+  <h2 class="fw-300 centrar-texto">Pegar Documento Aqui</h2>
+  <textarea rows="10" cols="50" name = "csv" id = "textarea" required="Es necesario rellenar el campo"></textarea>
+
+
+  <div class="contenedor centrar-texto fw-300">Previsualización de Tabla</div>
+  <br>
+ <div id="team" name="team" class="contenedor centrar-texto fw-300"></div>
+
+<div class="convertir">
+<button type="button" class="boton boton-verde" onclick="myFunction()">Convertir</button>
+</div> 
+<br><br>
+<button class="boton boton-verde button" onclick="pregunta(); grabaTodoTabla('listaF');" title="Grabar">Guardar</button>
+
+<div id="respuesta">
+</div>
+
+
+
+
+</section>
+</fomr>
+</body>
+</head>
+</html>
+
+    <script type="text/javascript">
+  function myFunction() {
+
+                
+                var tbl = "<form name=tuformulario ><table class='contenedor centrar-texto fw-300' style='font-size: 11px;' border='1' id='listaF'><tbody>"
+                var lines = document.getElementById("textarea").value.split("\n");
+                var numero=0;
+                var numero2=0;
+
+                for (var i = 0; i < lines.length; i++) {
+                  numero ++;
+                  tbl = tbl + (`<tr id='tr_${numero}'>`);
+                  var items = lines[i].split("\t");
+
+                  for (var j = 0; j < items.length; j++) {
+                  numero2++;
+                  tbl = tbl + (`<td id='td_${numero}.${numero2}'>`) + items[j] + "</td>";
+
+                  }
+                  numero2=0;
+
+                   tbl = tbl + "</tr>";
+                }
+                tbl = tbl + "</tbody></table></form>";
+                var divTable = document.getElementById('team');
+                console.log(tbl);
+                divTable.innerHTML= tbl;
+
+             }    
+
+document.getElementById("textarea").addEventListener('keyup', (e) => {
+
+let nombre = e.target.value;
+e.target.value = nombre.toUpperCase().trim();
+
+});
+
+/* Evento para cuando el usuario libera la tecla escrita dentro del input */
+
+$(document).ready(function() {    
+    $('.button').on('click', function(){
+        //Añadimos la imagen de carga en el contenedor
+        $('#respuesta').html('<div class="loader contenedor centrar-texto fw-300" "><img src="img/status.gif" alt="loading" /><br/>Un momento, por favor...</div>');
+ 
+      });              
+});    
+
+function pregunta(){ 
+    if (!(confirm('¿Estas seguro que deseas guardar la tabla?'))){ 
+            
+        system.exit(0)
+          return false;
+    } 
+  }
+// Funcion que graba los datos de la tabla.
+ 
+function grabaTodoTabla(TABLAID){
+        var DATA 	= [];
+        var TABLA 	= $("#"+ TABLAID +" tbody");
+       
+        validadorTR = false;
+        numeroTR=1;
+     
+        TABLA.each(function(){
+
+        while(validadorTR == false){
+         var ID = $(this).find(`tr[id='tr_${numeroTR}']`).text();
+       
+         validadorTD = false;
+         numeroTD=1;
+        while(validadorTD == false){
+
+        var TD = $(this).find(`td[id='td_${numeroTR}.${numeroTD}']`).text();
+          if(TD ==""){
+                validadorTD=true; 
+           }
+ 
+              item = {};
+               if(TD !==''){
+                item [`${numeroTR}.${numeroTD}`]= TD;
+                DATA.push(item);
+              
+            }
+            
+            numeroTD++;
+        }
+
+         if(ID ==''){
+           validadorTR=true;
+         }
+            numeroTR++;
+
+          }
+        });
+  //    
+    console.log(DATA);
+        //eventualmente se lo vamos a enviar por PHP por ajax de una forma bastante simple y además convertiremos el array en json para evitar cualquier incidente con compativilidades.
+        INFO 	= new FormData();
+        aInfo 	= JSON.stringify(DATA);
+        
+
+        INFO.append('data', aInfo);
+        
+        console.log('AINFO'+ aInfo);
+
+      $.ajax({
+
+           
+            data: INFO,
+            type: 'POST',
+            url : 'pagina.php',
+            processData: false, 
+            contentType: false,
+            success: function(r){
+
+              $('#respuesta').fadeIn(1000).html(r);
+             // $("#respuesta").html("");
+		         //	$("#respuesta").html(r);
+      // window.location="pagina.php"  ;
+            alert("Datos Guardados Exitosamente");
+               
+          //    alert("tabla guardada en ajax" );
+                //Una vez que se haya ejecutado de forma exitosa hacer el código para que muestre esto mismo.
+            },
+
+
+            error: function () {
+                alert("Error");
+            } 
+        })
+
+      
+    }
+
+
+
+</script>
+
